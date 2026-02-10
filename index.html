@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Česko Sobě | Musíme si pomoct sami</title>
+    <meta name="description" content="Populace stárne, rodí se méně dětí. Je to celosvětový problém. Na důchody nebudou peníze. Česko Sobě sdružuje lidi, kteří se rozhodli být aktivní.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.ceskosobe.cz/">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.ceskosobe.cz/">
+    <meta property="og:title" content="Česko Sobě | Musíme si pomoct sami">
+    <meta property="og:description" content="Populace stárne, rodí se méně dětí. Na důchody jednoduše nebudou peníze. Sdružujeme lidi, kteří si budují vlastní finanční zajištění.">
+    <meta property="og:locale" content="cs_CZ">
+    <meta property="og:site_name" content="Česko Sobě">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cz-blue': '#0A2540',
+                        'cz-blue-light': '#1A3A5C',
+                        'cz-red': '#D7141A',
+                        'cz-red-dark': '#B01016',
+                        'cz-gray': '#1A1A1A',
+                        'cz-gray-light': '#6B7280',
+                        'cz-bg': '#FAFBFC',
+                    },
+                    fontFamily: {
+                        'sans': ['Montserrat', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.7s ease-out',
+                        'fade-in-delay': 'fadeIn 0.7s ease-out 0.3s both',
+                        'fade-in-delay-2': 'fadeIn 0.7s ease-out 0.6s both',
+                        'fade-in-delay-3': 'fadeIn 0.7s ease-out 0.9s both',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            'from': { opacity: '0', transform: 'translateY(16px)' },
+                            'to': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white font-sans antialiased">
+
+    <!-- Trikolóra – horní pruh -->
+    <div class="fixed top-0 left-0 w-full h-[3px] z-[60] flex">
+        <div class="flex-1 bg-white"></div>
+        <div class="flex-1 bg-cz-blue"></div>
+        <div class="flex-1 bg-cz-red"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white/95 backdrop-blur-sm border-b border-gray-100 z-50 top-[3px]">
+        <div class="max-w-4xl mx-auto px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <span class="text-xl font-extrabold tracking-tight">
+                    <span class="text-cz-blue">Česko</span><span class="text-cz-red">Sobě</span>
+                </span>
+                <a href="https://www.investczech.cz" class="text-xs text-cz-gray-light hover:text-cz-blue transition-colors font-medium">
+                    investczech.cz
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="relative min-h-screen flex items-center overflow-hidden">
+        <!-- Background image -->
+        <div class="absolute inset-0">
+            <img src="images/ceskosobe.png" alt="Lidé různých generací spolu v parku" class="w-full h-full object-cover">
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-r from-white/90 via-white/70 to-transparent"></div>
+
+        <div class="relative max-w-7xl mx-auto px-6 lg:px-8 pt-28 pb-20">
+            <div class="max-w-xl">
+                <p class="text-sm font-semibold text-cz-red uppercase tracking-[0.2em] mb-10 animate-fade-in">Soukromá iniciativa</p>
+
+                <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-cz-blue leading-[1.05] tracking-tight animate-fade-in">
+                    Musíme si<br>pomoct sami.
+                </h1>
+
+                <div class="mt-12 animate-fade-in-delay">
+                    <p class="text-xl md:text-2xl text-cz-gray leading-relaxed font-medium">
+                        Populace stárne. Rodí se méně dětí. Není to jen u nás – je to celosvětový problém. Na důchody jednoduše nebudou peníze.
+                    </p>
+                    <p class="text-lg text-cz-gray-light leading-relaxed mt-6">
+                        To není kritika. To je matematika. A řešení má jen ten, kdo je aktivní.
+                    </p>
+                </div>
+
+                <!-- Trikolóra separator -->
+                <div class="flex items-center space-x-1 mt-16 animate-fade-in-delay">
+                    <div class="w-12 h-[2px] bg-cz-bg"></div>
+                    <div class="w-12 h-[2px] bg-cz-blue"></div>
+                    <div class="w-12 h-[2px] bg-cz-red"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demografie -->
+    <section class="py-28 bg-cz-bg border-y border-gray-100">
+        <div class="max-w-4xl mx-auto px-6 lg:px-8">
+            <p class="text-sm font-semibold text-cz-gray-light uppercase tracking-[0.2em] mb-16 text-center">Demografická realita</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-14">
+                <div>
+                    <div class="text-5xl font-extrabold text-cz-blue">1,37</div>
+                    <p class="text-sm text-cz-gray-light mt-3 leading-relaxed">Tolik dětí se v průměru rodí na jednu ženu v ČR (2024). Pro udržení populace je potřeba 2,1. Pokles z 1,83 v roce 2021 – trend je prudce sestupný.</p>
+                </div>
+                <div>
+                    <div class="text-5xl font-extrabold text-cz-blue">2 : 1</div>
+                    <p class="text-sm text-cz-gray-light mt-3 leading-relaxed">Poměr pracujících k důchodcům v roce 2050. Dnes jsou to přibližně 3 pracující na jednoho seniora. Systém průběžného financování to neunese.</p>
+                </div>
+                <div>
+                    <div class="text-5xl font-extrabold text-cz-red">30 %</div>
+                    <p class="text-sm text-cz-gray-light mt-3 leading-relaxed">Tolik populace bude starší 65 let v roce 2050. Dnes je to 21 %. Z 2,26 milionu na více než 3 miliony za jednu generaci.</p>
+                </div>
+                <div>
+                    <div class="text-5xl font-extrabold text-cz-blue">20 736 Kč</div>
+                    <p class="text-sm text-cz-gray-light mt-3 leading-relaxed">Průměrný starobní důchod dnes (2024). A to ještě systém relativně funguje. Co bude za 20 let, si dokáže spočítat každý.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Manifest -->
+    <section class="py-28 bg-white">
+        <div class="max-w-2xl mx-auto px-6 lg:px-8">
+            <div class="space-y-10 text-cz-gray">
+                <p class="text-2xl md:text-3xl font-bold text-cz-blue leading-snug">
+                    Nikomu nic nevyčítáme. Ale matematika je neúprosná.
+                </p>
+                <p class="text-lg leading-relaxed">
+                    Když se rodí méně dětí a lidé žijí déle, průběžný důchodový systém nemá odkud brát. Není to jen český problém – stejnou situaci řeší Německo, Japonsko, Itálie i desítky dalších zemí. Nikde na světě to za vás nevyřeší stát.
+                </p>
+                <p class="text-lg leading-relaxed">
+                    Česko Sobě sdružuje lidi, kteří se rozhodli být aktivní. Ne proti systému. Vedle něj. Budují si vlastní finanční zajištění, protože vědí, že čekání není strategie.
+                </p>
+                <p class="text-lg leading-relaxed">
+                    Nejčastější cesta? Nájemní nemovitost. Byt, který měsíc co měsíc generuje příjem. Který se splácí z nájmu. A jehož hodnota roste s inflací.
+                </p>
+                <p class="text-xl font-bold text-cz-blue leading-snug">
+                    Každý z nás má tu možnost. Chybí jen rozhodnutí začít.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tři pilíře -->
+    <section class="py-28 bg-cz-blue">
+        <div class="max-w-4xl mx-auto px-6 lg:px-8">
+            <p class="text-sm font-semibold text-white/40 uppercase tracking-[0.2em] mb-6 text-center">Na čem stavíme</p>
+            <p class="text-white/50 text-center text-sm leading-relaxed max-w-2xl mx-auto mb-16">Když se občané dokážou finančně zajistit sami, vyhrávají všichni. Člověk má důstojný život. Rodina má stabilitu. A stát nemusí řešit, z čeho zaplatí další generaci důchodů.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div>
+                    <div class="text-4xl font-extrabold text-white/10 mb-4">I.</div>
+                    <h3 class="text-white font-bold text-lg mb-4">Porozumění</h3>
+                    <p class="text-white/50 text-sm leading-relaxed">Finanční gramotnost není luxus. Je to základní dovednost, kterou nás nikdo nenaučil. Sdílíme reálné zkušenosti a čísla, aby se každý mohl rozhodovat na základě faktů, ne emocí.</p>
+                </div>
+                <div>
+                    <div class="text-4xl font-extrabold text-white/10 mb-4">II.</div>
+                    <h3 class="text-white font-bold text-lg mb-4">Soběstačnost</h3>
+                    <p class="text-white/50 text-sm leading-relaxed">Člověk, který má vlastní příjem z nájmu, není závislý na státním rozpočtu. Nejenže se postará o sebe a svou rodinu, ale zároveň uvolní ruce systému pro ty, kteří pomoc skutečně potřebují.</p>
+                </div>
+                <div>
+                    <div class="text-4xl font-extrabold text-white/10 mb-4">III.</div>
+                    <h3 class="text-white font-bold text-lg mb-4">Komunita</h3>
+                    <p class="text-white/50 text-sm leading-relaxed">Nejde o to, kdo má víc bytů. Jde o to, aby si co nejvíc lidí dokázalo zajistit důstojné stáří. Sdílíme příběhy, zkušenosti a pomáháme si navzájem udělat ten první krok.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-28 bg-white">
+        <div class="max-w-xl mx-auto px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-cz-blue mb-6">Připravujeme platformu</h2>
+            <p class="text-cz-gray-light leading-relaxed mb-12">Nechte nám na sebe kontakt. Až to rozjedeme, budete mezi prvními, kdo se dozví. Nic jiného posílat nebudeme.</p>
+
+            <form id="signup-form" class="max-w-md mx-auto flex flex-col sm:flex-row gap-3">
+                <input
+                    type="email"
+                    id="email-input"
+                    placeholder="vas@email.cz"
+                    required
+                    class="flex-1 px-5 py-4 border border-gray-200 rounded text-sm text-cz-gray focus:outline-none focus:border-cz-blue transition-colors"
+                >
+                <button
+                    type="submit"
+                    class="px-8 py-4 bg-cz-red hover:bg-cz-red-dark text-white font-semibold text-sm rounded transition-colors duration-200 whitespace-nowrap"
+                >
+                    Chci vědět
+                </button>
+            </form>
+            <div id="form-message" class="hidden mt-6 text-sm text-cz-blue font-semibold"></div>
+
+            <div class="mt-16 pt-10 border-t border-gray-100">
+                <p class="text-xs text-cz-gray-light">Chcete konkrétní pomoc s první investicí?</p>
+                <a href="https://www.investczech.cz" class="inline-flex items-center text-sm font-semibold text-cz-blue hover:text-cz-red transition-colors mt-3">
+                    investczech.cz
+                    <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-cz-blue">
+        <!-- Trikolóra -->
+        <div class="w-full h-[3px] flex">
+            <div class="flex-1 bg-white"></div>
+            <div class="flex-1 bg-cz-blue"></div>
+            <div class="flex-1 bg-cz-red"></div>
+        </div>
+        <div class="max-w-4xl mx-auto px-6 lg:px-8 py-14">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+                <div class="text-center md:text-left">
+                    <span class="text-lg font-extrabold text-white tracking-tight">
+                        Česko<span class="text-cz-red">Sobě</span>
+                    </span>
+                    <p class="text-xs text-white/30 mt-2">Soukromá iniciativa za finanční soběstačnost</p>
+                </div>
+                <div class="flex items-center space-x-8">
+                    <a href="https://www.investczech.cz" class="text-xs text-white/30 hover:text-white/60 transition-colors">InvestCzech.cz</a>
+                    <a href="https://www.chcibytmilionarem.cz" class="text-xs text-white/30 hover:text-white/60 transition-colors">ChciBytMilionarem.cz</a>
+                </div>
+                <p class="text-xs text-white/15">PTF reality, s.r.o.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var email = document.getElementById('email-input').value;
+            var msg = document.getElementById('form-message');
+
+            var subscribers = JSON.parse(localStorage.getItem('cs_subscribers') || '[]');
+            subscribers.push({ email: email, date: new Date().toISOString() });
+            localStorage.setItem('cs_subscribers', JSON.stringify(subscribers));
+
+            msg.textContent = 'Dáme vám vědět. Děkujeme.';
+            msg.classList.remove('hidden');
+            document.getElementById('email-input').value = '';
+        });
+    </script>
+</body>
+</html>
