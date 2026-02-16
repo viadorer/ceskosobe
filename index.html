@@ -243,19 +243,56 @@
     </footer>
 
     <script>
-        document.getElementById('signup-form').addEventListener('submit', function(e) {
+    (function() {
+        var API_URL = 'https://api-production-88cf.up.railway.app/api/v1/public/forms/newsletter-prih-40669/submit';
+        var form = document.getElementById('signup-form');
+        if (!form) { console.error('Newsletter: Formulář nenalezen'); return; }
+
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
-            var email = document.getElementById('email-input').value;
+
+            var btn = form.querySelector('button[type="submit"]');
+            var origText = btn ? btn.textContent : '';
+            if (btn) { btn.disabled = true; btn.textContent = 'Odesílám...'; }
+
+            var emailInput = document.getElementById('email-input');
+            var email = emailInput ? emailInput.value.trim() : '';
             var msg = document.getElementById('form-message');
 
-            var subscribers = JSON.parse(localStorage.getItem('cs_subscribers') || '[]');
-            subscribers.push({ email: email, date: new Date().toISOString() });
-            localStorage.setItem('cs_subscribers', JSON.stringify(subscribers));
+            if (!email) {
+                msg.textContent = 'Vyplňte e-mail.';
+                msg.classList.remove('hidden');
+                msg.style.color = '#D7141A';
+                if (btn) { btn.disabled = false; btn.textContent = origText; }
+                return;
+            }
 
-            msg.textContent = 'Dáme vám vědět. Děkujeme.';
-            msg.classList.remove('hidden');
-            document.getElementById('email-input').value = '';
+            try {
+                var res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                var json = await res.json();
+
+                if (res.ok) {
+                    form.innerHTML = '<p class="text-center py-5 text-cz-blue font-semibold">Dáme vám vědět. Děkujeme!</p>';
+                } else {
+                    msg.textContent = json.message || 'Nepodařilo se přihlásit. Zkuste to znovu.';
+                    msg.classList.remove('hidden');
+                    msg.style.color = '#D7141A';
+                    if (btn) { btn.disabled = false; btn.textContent = origText; }
+                }
+            } catch (err) {
+                console.error('Newsletter error:', err);
+                msg.textContent = 'Chyba připojení. Zkuste to znovu.';
+                msg.classList.remove('hidden');
+                msg.style.color = '#D7141A';
+                if (btn) { btn.disabled = false; btn.textContent = origText; }
+            }
         });
+    })();
     </script>
     <!-- Hugo Chatbot Widget -->
     <script
