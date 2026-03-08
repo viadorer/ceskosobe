@@ -1,3 +1,21 @@
 {
-  "posts": []
+  "posts": [
+    {
+      "date": "2026-03-08",
+      "slug": "cesko-sobe-jak-zajistit-dustojne-stari",
+      "image": "/images/blog/cesko-sobe-jak-zajistit-dustojne-stari.png",
+      "title": "Česko Sobě: Jak si zajistit důstojné stáří v nejisté době?",
+      "excerpt": "Státní důchod se stává nejistým. Ukážeme vám, jak se aktivně postarat o své finanční zajištění na stáří pomocí nájemních nemovitostí. Přidejte se ke komunitě ČeskoSobě a získejte fakta, čísla a podporu.",
+      "category": "guide",
+      "featured": false,
+      "imageAlt": "Graf s klesající porodností v ČR a rostoucím počtem seniorů.",
+      "keywords": "důchod, investice, nemovitosti, nájemní bydlení, finanční soběstačnost, ČeskoSobě, důchodová reforma, demografie",
+      "readTime": 7,
+      "seoTitle": "Důstojné stáří: Zajistěte se s ČeskoSobě",
+      "categoryName": "Průvodce",
+      "dateFormatted": "8. března 2026",
+      "seoDescription": "Nečekejte na státní důchod. Zjistěte, jak investovat do nájemních nemovitostí a budovat si finanční soběstačnost. ČeskoSobě: fakta, komunita, řešení.",
+      "id": "cesko-sobe-jak-zajistit-dustojne-stari"
+    }
+  ]
 }
