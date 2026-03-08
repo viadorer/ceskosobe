@@ -1,0 +1,65 @@
+{
+  "@context": "https://schema.org",
+  "generatedAt": "2026-03-08T10:58:05.437Z",
+  "generatedBy": "Hugo Orchestrator AIO Engine",
+  "projectType": "html",
+  "schemas": {
+    "organization": {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Česko sobě",
+      "description": "Soukromá iniciativa za finanční soběstačnost. Pomáháme lidem zajistit si důstojné stáří investicemi do nemovitostí.",
+      "sameAs": [
+        "https://investczech.cz",
+        "https://chcibytmlionarem.cz"
+      ],
+      "keywords": "finanční soběstačnost, investice do nemovitostí, nájemní byt, demografická krize, důchodový systém, pasivní příjem, finanční gramotnost, investiční strategie"
+    },
+    "faq": {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Co je cílem iniciativy Česko Sobě?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Česko Sobě sdružuje lidi, kteří se rozhodli být aktivní a budovat si vlastní finanční zajištění v souvislosti se stárnutím populace a klesajícím počtem narozených dětí."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Jaký je průměrný počet dětí narozených na jednu ženu v ČR v roce 2024?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "V roce 2024 se v České republice rodí průměrně 1,37 dětí na jednu ženu. Pro udržení populace je potřeba 2,1."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Jaký je očekávaný poměr pracujících k důchodcům v ČR v roce 2050?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "V roce 2050 se očekává poměr 2 pracujících na 1 důchodce v České republice. Dnes jsou to přibližně 3 pracující na jednoho seniora."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Jaké procento populace ČR bude starší 65 let v roce 2050?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "V roce 2050 se odhaduje, že 30 % populace České republiky bude starší 65 let. V současnosti je to 21 %."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Jaká je průměrná výše starobního důchodu v ČR v roce 2024?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Průměrný starobní důchod v České republice v roce 2024 činí 20 736 Kč."
+          }
+        }
+      ]
+    }
+  }
+}
