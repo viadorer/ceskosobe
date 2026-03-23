@@ -1,6 +1,6 @@
 {
   "@context": "https://schema.org",
-  "generatedAt": "2026-03-08T10:58:05.437Z",
+  "generatedAt": "2026-03-23T07:03:48.761Z",
   "generatedBy": "Hugo Orchestrator AIO Engine",
   "projectType": "html",
   "schemas": {
@@ -24,7 +24,7 @@
           "name": "Co je cílem iniciativy Česko Sobě?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Česko Sobě sdružuje lidi, kteří se rozhodli být aktivní a budovat si vlastní finanční zajištění v souvislosti se stárnutím populace a klesajícím počtem narozených dětí."
+            "text": "Česko Sobě sdružuje lidi, kteří se rozhodli být aktivní a budovat si vlastní finanční zajištění v souvislosti s demografickými změnami a potenciálními problémy s důchodovým systémem."
           }
         },
         {
@@ -32,7 +32,7 @@
           "name": "Jaký je průměrný počet dětí narozených na jednu ženu v ČR v roce 2024?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "V roce 2024 se v České republice rodí průměrně 1,37 dětí na jednu ženu. Pro udržení populace je potřeba 2,1."
+            "text": "V roce 2024 se v České republice rodí v průměru 1,37 dětí na jednu ženu. Pro udržení populace je přitom potřeba 2,1."
           }
         },
         {
@@ -45,18 +45,18 @@
         },
         {
           "@type": "Question",
-          "name": "Jaké procento populace ČR bude starší 65 let v roce 2050?",
+          "name": "Jaký podíl populace ČR bude tvořit populace starší 65 let v roce 2050?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "V roce 2050 se odhaduje, že 30 % populace České republiky bude starší 65 let. V současnosti je to 21 %."
+            "text": "V roce 2050 se očekává, že 30 % populace České republiky bude starší 65 let. V současnosti je to 21 %."
           }
         },
         {
           "@type": "Question",
-          "name": "Jaká je průměrná výše starobního důchodu v ČR v roce 2024?",
+          "name": "Jaká je aktuální výše průměrného starobního důchodu v ČR (2024)?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Průměrný starobní důchod v České republice v roce 2024 činí 20 736 Kč."
+            "text": "V roce 2024 činí průměrný starobní důchod v České republice 20 736 Kč."
           }
         }
       ]
