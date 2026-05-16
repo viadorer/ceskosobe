@@ -39,7 +39,7 @@ const PAGE_SIZE = 12;
 function formatPrice(price: number, currency = "CZK"): string {
   return new Intl.NumberFormat("cs-CZ", {
     style: "currency",
-    currency,
+    currency: currency.toUpperCase(),
     maximumFractionDigits: 0,
   }).format(price);
 }
