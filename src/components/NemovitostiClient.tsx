@@ -36,6 +36,21 @@ const SORT_OPTIONS = [
 
 const PAGE_SIZE = 12;
 
+// Shared form control classes — consistent height across inputs & selects
+const INPUT_CLS =
+  "h-[42px] w-full rounded-md border border-gray-200 px-3 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20 disabled:opacity-50";
+const SELECT_CLS =
+  "h-[42px] w-full appearance-none rounded-md border border-gray-200 bg-white px-3 text-sm text-cz-gray outline-none transition-colors focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20 disabled:opacity-50";
+
+// ---------------------------------------------------------------------------
+// Mapy.cz suggest types
+// ---------------------------------------------------------------------------
+
+interface CitySuggestion {
+  name: string;
+  label: string;
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -50,6 +65,22 @@ function formatPrice(price: number, currency?: string | null): string {
 
 function formatArea(area: number): string {
   return `${new Intl.NumberFormat("cs-CZ").format(area)} m²`;
+}
+
+/** Debounce helper for city suggest calls. */
+function useDebouncedCallback<A extends unknown[]>(
+  fn: (...args: A) => void,
+  delayMs: number,
+) {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  return useCallback(
+    (...args: A) => {
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => fn(...args), delayMs);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [delayMs],
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -208,7 +239,6 @@ function Pagination({
 }) {
   if (totalPages <= 1) return null;
 
-  // Build page numbers to show: always show first, last, current, and neighbors
   const pages: (number | "dots")[] = [];
   for (let i = 1; i <= totalPages; i++) {
     if (i === 1 || i === totalPages || (i >= page - 1 && i <= page + 1)) {
@@ -298,13 +328,18 @@ export function NemovitostiClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Dynamic filter options from API
+  // Dynamic filter options from API (categories, subtypes)
   const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(
     null,
   );
   const [filtersLoading, setFiltersLoading] = useState(true);
+
+  // City suggest (Mapy.cz)
   const [cityQuery, setCityQuery] = useState(city);
+  const [citySuggestions, setCitySuggestions] = useState<CitySuggestion[]>([]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [suggestLoading, setSuggestLoading] = useState(false);
+  const [mapySuggestAvailable, setMapySuggestAvailable] = useState(true);
   const cityRef = useRef<HTMLDivElement>(null);
 
   // ---------------------------------------------------------------------------
@@ -323,7 +358,7 @@ export function NemovitostiClient() {
         const data: FilterOptions = await res.json();
         if (!cancelled) setFilterOptions(data);
       } catch {
-        // Silently fail — filters will just not be populated
+        // Silently fail
       } finally {
         if (!cancelled) setFiltersLoading(false);
       }
@@ -333,6 +368,46 @@ export function NemovitostiClient() {
       cancelled = true;
     };
   }, [listingType]);
+
+  // ---------------------------------------------------------------------------
+  // Mapy.cz city suggest
+  // ---------------------------------------------------------------------------
+  const fetchCitySuggestions = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setCitySuggestions([]);
+      return;
+    }
+    setSuggestLoading(true);
+    try {
+      const res = await fetch(
+        `/api/suggest-city?q=${encodeURIComponent(query)}`,
+      );
+      const data: CitySuggestion[] = await res.json();
+      if (data.length === 0 && query.length >= 2) {
+        // Mapy.cz key not configured — disable suggest, use Nemovizor cities
+        setMapySuggestAvailable(false);
+      }
+      setCitySuggestions(data);
+    } catch {
+      setCitySuggestions([]);
+    } finally {
+      setSuggestLoading(false);
+    }
+  }, []);
+
+  const debouncedFetchSuggestions = useDebouncedCallback(
+    (query: string) => {
+      fetchCitySuggestions(query);
+    },
+    300,
+  );
+
+  // Fallback: filter Nemovizor cities when Mapy.cz is not available
+  const nemovizorCities = !mapySuggestAvailable
+    ? (filterOptions?.cities ?? []).filter((c) =>
+        c.value.toLowerCase().includes(cityQuery.toLowerCase()),
+      )
+    : [];
 
   // Close city dropdown on outside click
   useEffect(() => {
@@ -344,11 +419,6 @@ export function NemovitostiClient() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // Filtered city list based on user input
-  const filteredCities = (filterOptions?.cities ?? []).filter((c) =>
-    c.value.toLowerCase().includes(cityQuery.toLowerCase()),
-  );
 
   // Build API query string from current filters
   const buildQuery = useCallback(
@@ -444,6 +514,11 @@ export function NemovitostiClient() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // Determine what to show in city dropdown
+  const hasSuggestions = mapySuggestAvailable
+    ? citySuggestions.length > 0
+    : nemovizorCities.length > 0;
+
   return (
     <div className="min-h-screen bg-cz-bg pt-28 pb-20">
       {/* Header */}
@@ -471,7 +546,6 @@ export function NemovitostiClient() {
                 type="button"
                 onClick={() => {
                   setListingType(lt.value);
-                  // Reset subtype when switching listing type — options may differ
                   setSubtype("");
                 }}
                 className={`flex-1 rounded-md py-2.5 text-sm font-semibold transition-all ${
@@ -485,7 +559,7 @@ export function NemovitostiClient() {
             ))}
           </div>
 
-          {/* Filter grid */}
+          {/* Filter grid — row 1 */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Category */}
             <div>
@@ -500,10 +574,10 @@ export function NemovitostiClient() {
                 value={category}
                 onChange={(e) => {
                   setCategory(e.target.value);
-                  setSubtype(""); // Reset subtype when category changes
+                  setSubtype("");
                 }}
                 disabled={filtersLoading}
-                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20 disabled:opacity-50"
+                className={SELECT_CLS}
               >
                 <option value="">Všechny typy</option>
                 {(filterOptions?.categories ?? []).map((c) => (
@@ -514,58 +588,107 @@ export function NemovitostiClient() {
               </select>
             </div>
 
-            {/* City — searchable dropdown */}
+            {/* City — Mapy.cz autocomplete with Nemovizor fallback */}
             <div ref={cityRef} className="relative">
               <label
                 htmlFor="city"
                 className="mb-1.5 block text-xs font-semibold text-cz-blue"
               >
-                Město
+                Lokalita
               </label>
-              <input
-                id="city"
-                type="text"
-                value={cityQuery}
-                onChange={(e) => {
-                  setCityQuery(e.target.value);
-                  setShowCityDropdown(true);
-                  // If user clears the field, clear the selected city too
-                  if (!e.target.value.trim()) setCity("");
-                }}
-                onFocus={() => setShowCityDropdown(true)}
-                placeholder={
-                  filtersLoading
-                    ? "Načítám města..."
-                    : "Vyhledejte město"
-                }
-                disabled={filtersLoading}
-                autoComplete="off"
-                className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20 disabled:opacity-50"
-              />
-              {showCityDropdown && filteredCities.length > 0 && (
-                <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg">
-                  {filteredCities.slice(0, 50).map((c) => (
-                    <li key={c.value}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCity(c.value);
-                          setCityQuery(c.value);
-                          setShowCityDropdown(false);
-                        }}
-                        className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-cz-bg ${
-                          city === c.value
-                            ? "font-semibold text-cz-blue"
-                            : "text-cz-gray"
-                        }`}
-                      >
-                        <span>{c.value}</span>
-                        <span className="ml-2 text-xs text-cz-gray-light">
-                          {c.count.toLocaleString("cs-CZ")}
-                        </span>
-                      </button>
+              <div className="relative">
+                <input
+                  id="city"
+                  type="text"
+                  value={cityQuery}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setCityQuery(val);
+                    setShowCityDropdown(true);
+                    if (!val.trim()) {
+                      setCity("");
+                      setCitySuggestions([]);
+                    } else if (mapySuggestAvailable) {
+                      debouncedFetchSuggestions(val);
+                    }
+                  }}
+                  onFocus={() => {
+                    if (cityQuery.length >= 2) setShowCityDropdown(true);
+                  }}
+                  placeholder="Zadejte město nebo obec"
+                  autoComplete="off"
+                  className={INPUT_CLS}
+                />
+                {/* Search icon */}
+                <svg
+                  className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              {showCityDropdown && (hasSuggestions || suggestLoading) && (
+                <ul className="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                  {suggestLoading && (
+                    <li className="px-3 py-2 text-xs text-cz-gray-light">
+                      Hledám...
                     </li>
-                  ))}
+                  )}
+                  {/* Mapy.cz suggestions */}
+                  {mapySuggestAvailable &&
+                    citySuggestions.map((s, idx) => (
+                      <li key={`${s.name}-${idx}`}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCity(s.name);
+                            setCityQuery(s.name);
+                            setShowCityDropdown(false);
+                          }}
+                          className="flex w-full flex-col px-3 py-2 text-left transition-colors hover:bg-cz-bg"
+                        >
+                          <span className="text-sm font-medium text-cz-gray">
+                            {s.name}
+                          </span>
+                          {s.label !== s.name && (
+                            <span className="text-xs text-cz-gray-light">
+                              {s.label}
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  {/* Nemovizor fallback */}
+                  {!mapySuggestAvailable &&
+                    nemovizorCities.slice(0, 30).map((c) => (
+                      <li key={c.value}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCity(c.value);
+                            setCityQuery(c.value);
+                            setShowCityDropdown(false);
+                          }}
+                          className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-cz-bg ${
+                            city === c.value
+                              ? "font-semibold text-cz-blue"
+                              : "text-cz-gray"
+                          }`}
+                        >
+                          <span>{c.value}</span>
+                          <span className="ml-2 text-xs text-cz-gray-light">
+                            {c.count.toLocaleString("cs-CZ")}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
                 </ul>
               )}
             </div>
@@ -583,13 +706,9 @@ export function NemovitostiClient() {
                 type="number"
                 value={priceMin}
                 onChange={(e) => setPriceMin(e.target.value)}
-                placeholder={
-                  filterOptions?.priceRange
-                    ? `od ${filterOptions.priceRange.min.toLocaleString("cs-CZ")}`
-                    : "0"
-                }
+                placeholder="0"
                 min={0}
-                className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20"
+                className={INPUT_CLS}
               />
             </div>
 
@@ -606,13 +725,9 @@ export function NemovitostiClient() {
                 type="number"
                 value={priceMax}
                 onChange={(e) => setPriceMax(e.target.value)}
-                placeholder={
-                  filterOptions?.priceRange
-                    ? `do ${filterOptions.priceRange.max.toLocaleString("cs-CZ")}`
-                    : "bez limitu"
-                }
+                placeholder="bez limitu"
                 min={0}
-                className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20"
+                className={INPUT_CLS}
               />
             </div>
 
@@ -629,7 +744,7 @@ export function NemovitostiClient() {
                 value={subtype}
                 onChange={(e) => setSubtype(e.target.value)}
                 disabled={filtersLoading}
-                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20 disabled:opacity-50"
+                className={SELECT_CLS}
               >
                 <option value="">Všechny dispozice</option>
                 {(filterOptions?.subtypes ?? []).map((s) => (
@@ -653,13 +768,9 @@ export function NemovitostiClient() {
                 type="number"
                 value={areaMin}
                 onChange={(e) => setAreaMin(e.target.value)}
-                placeholder={
-                  filterOptions?.areaRange
-                    ? `od ${filterOptions.areaRange.min.toLocaleString("cs-CZ")}`
-                    : "0"
-                }
+                placeholder="0"
                 min={0}
-                className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20"
+                className={INPUT_CLS}
               />
             </div>
 
@@ -676,13 +787,9 @@ export function NemovitostiClient() {
                 type="number"
                 value={areaMax}
                 onChange={(e) => setAreaMax(e.target.value)}
-                placeholder={
-                  filterOptions?.areaRange
-                    ? `do ${filterOptions.areaRange.max.toLocaleString("cs-CZ")}`
-                    : "bez limitu"
-                }
+                placeholder="bez limitu"
                 min={0}
-                className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20"
+                className={INPUT_CLS}
               />
             </div>
 
@@ -698,7 +805,7 @@ export function NemovitostiClient() {
                 id="sort"
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20"
+                className={SELECT_CLS}
               >
                 {SORT_OPTIONS.map((s) => (
                   <option key={s.value} value={s.value}>
@@ -707,16 +814,16 @@ export function NemovitostiClient() {
                 ))}
               </select>
             </div>
+          </div>
 
-            {/* Search button */}
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full rounded-md bg-cz-red px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-cz-red-dark"
-              >
-                Vyhledat
-              </button>
-            </div>
+          {/* Search button — full width below grid */}
+          <div className="mt-4">
+            <button
+              type="submit"
+              className="w-full rounded-md bg-cz-red px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-cz-red-dark sm:w-auto sm:min-w-[200px]"
+            >
+              Vyhledat
+            </button>
           </div>
         </form>
 

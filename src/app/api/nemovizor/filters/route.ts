@@ -19,6 +19,9 @@ export async function GET(request: NextRequest) {
     const city = searchParams.get("city");
     if (city) params.city = city;
 
+    const country = searchParams.get("country");
+    if (country) params.country = country.split(",");
+
     const result = await getFilterOptions(params);
     return NextResponse.json(result);
   } catch (err) {
