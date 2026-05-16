@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 const NEMOVIZOR_BASE =
-  process.env.NEMOVIZOR_API_BASE || "https://nemovizor.vercel.app/api/v1";
+  process.env.NEMOVIZOR_API_BASE || "https://nemovizor.cz/api/v1";
 
 const NEMOVIZOR_KEY = process.env.NEMOVIZOR_API_KEY || "";
 
