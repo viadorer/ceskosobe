@@ -1,9 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import type { NemovizorProperty, SearchResult } from "@/lib/nemovizor";
+import type {
+  FilterOptions,
+  NemovizorProperty,
+  SearchResult,
+} from "@/lib/nemovizor";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -12,16 +16,16 @@ import type { NemovizorProperty, SearchResult } from "@/lib/nemovizor";
 const LISTING_TYPES = [
   { value: "sale", label: "Prodej" },
   { value: "rent", label: "Pronájem" },
+  { value: "auction", label: "Aukce" },
 ] as const;
 
-const SUBTYPES = [
-  { value: "1+kk", label: "1+kk" },
-  { value: "2+kk", label: "2+kk" },
-  { value: "2+1", label: "2+1" },
-  { value: "3+kk", label: "3+kk" },
-  { value: "3+1", label: "3+1" },
-  { value: "4+kk", label: "4+kk" },
-] as const;
+const CATEGORY_LABELS: Record<string, string> = {
+  apartment: "Byty",
+  house: "Domy",
+  land: "Pozemky",
+  commercial: "Komerční",
+  other: "Ostatní",
+};
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Nejnovější" },
@@ -276,6 +280,9 @@ export function NemovitostiClient() {
   const [listingType, setListingType] = useState(
     searchParams.get("typ") || "sale",
   );
+  const [category, setCategory] = useState(
+    searchParams.get("kategorie") || "",
+  );
   const [city, setCity] = useState(searchParams.get("mesto") || "");
   const [priceMin, setPriceMin] = useState(searchParams.get("cena_od") || "");
   const [priceMax, setPriceMax] = useState(searchParams.get("cena_do") || "");
@@ -291,11 +298,65 @@ export function NemovitostiClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Dynamic filter options from API
+  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(
+    null,
+  );
+  const [filtersLoading, setFiltersLoading] = useState(true);
+  const [cityQuery, setCityQuery] = useState(city);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const cityRef = useRef<HTMLDivElement>(null);
+
+  // ---------------------------------------------------------------------------
+  // Fetch dynamic filter options (re-fetches when listing_type changes)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    let cancelled = false;
+    async function loadFilters() {
+      setFiltersLoading(true);
+      try {
+        const q = new URLSearchParams();
+        q.set("listing_type", listingType);
+        q.set("country", "cz");
+        const res = await fetch(`/api/nemovizor/filters?${q.toString()}`);
+        if (!res.ok) throw new Error("Filters fetch failed");
+        const data: FilterOptions = await res.json();
+        if (!cancelled) setFilterOptions(data);
+      } catch {
+        // Silently fail — filters will just not be populated
+      } finally {
+        if (!cancelled) setFiltersLoading(false);
+      }
+    }
+    loadFilters();
+    return () => {
+      cancelled = true;
+    };
+  }, [listingType]);
+
+  // Close city dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (cityRef.current && !cityRef.current.contains(e.target as Node)) {
+        setShowCityDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Filtered city list based on user input
+  const filteredCities = (filterOptions?.cities ?? []).filter((c) =>
+    c.value.toLowerCase().includes(cityQuery.toLowerCase()),
+  );
+
   // Build API query string from current filters
   const buildQuery = useCallback(
     (pageOverride?: number) => {
       const q = new URLSearchParams();
       q.set("listing_type", listingType);
+      q.set("country", "cz");
+      if (category) q.set("category", category);
       if (city.trim()) q.set("city", city.trim());
       if (priceMin) q.set("price_min", priceMin);
       if (priceMax) q.set("price_max", priceMax);
@@ -307,7 +368,7 @@ export function NemovitostiClient() {
       q.set("limit", String(PAGE_SIZE));
       return q.toString();
     },
-    [listingType, city, priceMin, priceMax, areaMin, areaMax, subtype, sort, page],
+    [listingType, category, city, priceMin, priceMax, areaMin, areaMax, subtype, sort, page],
   );
 
   // Sync state to URL search params
@@ -315,6 +376,7 @@ export function NemovitostiClient() {
     (pageOverride?: number) => {
       const q = new URLSearchParams();
       q.set("typ", listingType);
+      if (category) q.set("kategorie", category);
       if (city.trim()) q.set("mesto", city.trim());
       if (priceMin) q.set("cena_od", priceMin);
       if (priceMax) q.set("cena_do", priceMax);
@@ -326,7 +388,7 @@ export function NemovitostiClient() {
       if (p > 1) q.set("strana", String(p));
       router.replace(`/nemovitosti?${q.toString()}`, { scroll: false });
     },
-    [router, listingType, city, priceMin, priceMax, areaMin, areaMax, subtype, sort, page],
+    [router, listingType, category, city, priceMin, priceMax, areaMin, areaMax, subtype, sort, page],
   );
 
   // Fetch results
@@ -407,7 +469,11 @@ export function NemovitostiClient() {
               <button
                 key={lt.value}
                 type="button"
-                onClick={() => setListingType(lt.value)}
+                onClick={() => {
+                  setListingType(lt.value);
+                  // Reset subtype when switching listing type — options may differ
+                  setSubtype("");
+                }}
                 className={`flex-1 rounded-md py-2.5 text-sm font-semibold transition-all ${
                   listingType === lt.value
                     ? "bg-cz-blue text-white shadow-sm"
@@ -421,8 +487,35 @@ export function NemovitostiClient() {
 
           {/* Filter grid */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {/* City */}
+            {/* Category */}
             <div>
+              <label
+                htmlFor="category"
+                className="mb-1.5 block text-xs font-semibold text-cz-blue"
+              >
+                Typ nemovitosti
+              </label>
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  setSubtype(""); // Reset subtype when category changes
+                }}
+                disabled={filtersLoading}
+                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20 disabled:opacity-50"
+              >
+                <option value="">Všechny typy</option>
+                {(filterOptions?.categories ?? []).map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {CATEGORY_LABELS[c.value] || c.value} ({c.count.toLocaleString("cs-CZ")})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* City — searchable dropdown */}
+            <div ref={cityRef} className="relative">
               <label
                 htmlFor="city"
                 className="mb-1.5 block text-xs font-semibold text-cz-blue"
@@ -432,11 +525,49 @@ export function NemovitostiClient() {
               <input
                 id="city"
                 type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="např. Praha"
-                className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20"
+                value={cityQuery}
+                onChange={(e) => {
+                  setCityQuery(e.target.value);
+                  setShowCityDropdown(true);
+                  // If user clears the field, clear the selected city too
+                  if (!e.target.value.trim()) setCity("");
+                }}
+                onFocus={() => setShowCityDropdown(true)}
+                placeholder={
+                  filtersLoading
+                    ? "Načítám města..."
+                    : "Vyhledejte město"
+                }
+                disabled={filtersLoading}
+                autoComplete="off"
+                className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20 disabled:opacity-50"
               />
+              {showCityDropdown && filteredCities.length > 0 && (
+                <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg">
+                  {filteredCities.slice(0, 50).map((c) => (
+                    <li key={c.value}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCity(c.value);
+                          setCityQuery(c.value);
+                          setShowCityDropdown(false);
+                        }}
+                        className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-cz-bg ${
+                          city === c.value
+                            ? "font-semibold text-cz-blue"
+                            : "text-cz-gray"
+                        }`}
+                      >
+                        <span>{c.value}</span>
+                        <span className="ml-2 text-xs text-cz-gray-light">
+                          {c.count.toLocaleString("cs-CZ")}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             {/* Price min */}
@@ -452,7 +583,11 @@ export function NemovitostiClient() {
                 type="number"
                 value={priceMin}
                 onChange={(e) => setPriceMin(e.target.value)}
-                placeholder="0"
+                placeholder={
+                  filterOptions?.priceRange
+                    ? `od ${filterOptions.priceRange.min.toLocaleString("cs-CZ")}`
+                    : "0"
+                }
                 min={0}
                 className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20"
               />
@@ -471,13 +606,17 @@ export function NemovitostiClient() {
                 type="number"
                 value={priceMax}
                 onChange={(e) => setPriceMax(e.target.value)}
-                placeholder="bez limitu"
+                placeholder={
+                  filterOptions?.priceRange
+                    ? `do ${filterOptions.priceRange.max.toLocaleString("cs-CZ")}`
+                    : "bez limitu"
+                }
                 min={0}
                 className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20"
               />
             </div>
 
-            {/* Disposition */}
+            {/* Disposition — dynamic from API */}
             <div>
               <label
                 htmlFor="subtype"
@@ -489,12 +628,13 @@ export function NemovitostiClient() {
                 id="subtype"
                 value={subtype}
                 onChange={(e) => setSubtype(e.target.value)}
-                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20"
+                disabled={filtersLoading}
+                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20 disabled:opacity-50"
               >
-                <option value="">Všechny</option>
-                {SUBTYPES.map((s) => (
+                <option value="">Všechny dispozice</option>
+                {(filterOptions?.subtypes ?? []).map((s) => (
                   <option key={s.value} value={s.value}>
-                    {s.label}
+                    {s.value} ({s.count.toLocaleString("cs-CZ")})
                   </option>
                 ))}
               </select>
@@ -513,7 +653,11 @@ export function NemovitostiClient() {
                 type="number"
                 value={areaMin}
                 onChange={(e) => setAreaMin(e.target.value)}
-                placeholder="0"
+                placeholder={
+                  filterOptions?.areaRange
+                    ? `od ${filterOptions.areaRange.min.toLocaleString("cs-CZ")}`
+                    : "0"
+                }
                 min={0}
                 className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20"
               />
@@ -532,7 +676,11 @@ export function NemovitostiClient() {
                 type="number"
                 value={areaMax}
                 onChange={(e) => setAreaMax(e.target.value)}
-                placeholder="bez limitu"
+                placeholder={
+                  filterOptions?.areaRange
+                    ? `do ${filterOptions.areaRange.max.toLocaleString("cs-CZ")}`
+                    : "bez limitu"
+                }
                 min={0}
                 className="w-full rounded-md border border-gray-200 px-3 py-2.5 text-sm text-cz-gray outline-none transition-colors placeholder:text-gray-400 focus:border-cz-blue focus:ring-1 focus:ring-cz-blue/20"
               />
