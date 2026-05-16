@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ceskosobe",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "3099"],
+      "port": 3099,
+      "cwd": "/Users/davidchoc/Downloads/Cascade/ceskosobe-next"
+    }
+  ]
+}
