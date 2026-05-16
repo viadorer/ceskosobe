@@ -2,15 +2,13 @@
 // Nemovizor API client — server-side only
 // ---------------------------------------------------------------------------
 // Base URL includes /api/v1 so paths below are relative to that.
-// The search endpoint returns snake_case fields; the detail-by-slug endpoint
-// returns camelCase fields.  We normalise everything to snake_case in our
-// TypeScript types so that client components have a single contract.
+// The HTTP API returns camelCase fields everywhere.  We normalise to
+// snake_case in our TypeScript types so that client components have a
+// single, consistent contract.
 // ---------------------------------------------------------------------------
 
 const NEMOVIZOR_BASE =
-  process.env.NEMOVIZOR_API_BASE ||
-  process.env.NEMOVIZOR_API_URL ||
-  "https://nemovizor.vercel.app/api/v1";
+  process.env.NEMOVIZOR_API_BASE || "https://nemovizor.vercel.app/api/v1";
 
 const NEMOVIZOR_KEY = process.env.NEMOVIZOR_API_KEY || "";
 
@@ -148,10 +146,11 @@ export interface AiSearchResult {
 }
 
 // ---------------------------------------------------------------------------
-// camelCase → snake_case normaliser for detail endpoint responses
+// camelCase → snake_case normaliser for all API responses
 // ---------------------------------------------------------------------------
 
 const CAMEL_TO_SNAKE_MAP: Record<string, string> = {
+  nextCursor: "next_cursor",
   listingType: "listing_type",
   roomsLabel: "rooms_label",
   priceNote: "price_note",
@@ -258,7 +257,26 @@ export async function searchProperties(
   if (params.agency_id) query.set("agency_id", params.agency_id);
   if (params.broker_id) query.set("broker_id", params.broker_id);
 
-  return nemovizorFetch<SearchResult>(`/properties?${query.toString()}`);
+  // The HTTP API returns camelCase — normalise every property to snake_case
+  const raw = await nemovizorFetch<{
+    data: Record<string, unknown>[];
+    total: number;
+    page: number;
+    pages: number;
+    limit: number;
+    nextCursor?: string | null;
+  }>(`/properties?${query.toString()}`);
+
+  return {
+    data: raw.data.map(
+      (p) => normalisePropertyKeys(p) as unknown as NemovizorProperty,
+    ),
+    total: raw.total,
+    page: raw.page,
+    pages: raw.pages,
+    limit: raw.limit,
+    next_cursor: raw.nextCursor ?? null,
+  };
 }
 
 export async function getPropertyBySlug(
@@ -316,7 +334,12 @@ export async function getMapPoints(
   if (params.ne_lon != null) query.set("ne_lon", String(params.ne_lon));
   if (params.zoom != null) query.set("zoom", String(params.zoom));
 
-  return nemovizorFetch<MapPoint[]>(`/map-points?${query.toString()}`);
+  const raw = await nemovizorFetch<Record<string, unknown>[]>(
+    `/map-points?${query.toString()}`,
+  );
+  return raw.map(
+    (p) => normalisePropertyKeys(p) as unknown as MapPoint,
+  );
 }
 
 export async function getFilterOptions(
