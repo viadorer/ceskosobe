@@ -8,10 +8,10 @@ import type { NemovizorProperty } from "@/lib/nemovizor";
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatPrice(price: number, currency = "CZK"): string {
+function formatPrice(price: number, currency?: string | null): string {
   return new Intl.NumberFormat("cs-CZ", {
     style: "currency",
-    currency: currency.toUpperCase(),
+    currency: (currency || "CZK").toUpperCase(),
     maximumFractionDigits: 0,
   }).format(price);
 }
